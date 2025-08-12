@@ -1,0 +1,763 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html lang="en">\
+<head>\
+    <meta charset="UTF-8">\
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">\
+    <title>Advanced To-Do List</title>\
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">\
+    <style>\
+        /* General Styles */\
+        :root \{\
+            --bg-color: #f0f2f5;\
+            --card-bg: #ffffff;\
+            --text-color: #333;\
+            --placeholder-color: #999;\
+            --primary-color: #4a90e2;\
+            --secondary-color: #d1d8e0;\
+            --border-color: #e0e6ed;\
+            --completed-color: #a0a0a0;\
+            --completed-bg: #f5f5f5;\
+            --high-priority: #ff6b6b;\
+            --medium-priority: #ffd966;\
+            --low-priority: #63d471;\
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\
+        \}\
+\
+        body \{\
+            font-family: 'Poppins', sans-serif;\
+            background-color: var(--bg-color);\
+            color: var(--text-color);\
+            margin: 0;\
+            padding: 20px;\
+            display: flex;\
+            justify-content: center;\
+            align-items: flex-start;\
+            min-height: 100vh;\
+            transition: background-color 0.3s ease;\
+        \}\
+\
+        /* Dark Theme Toggle */\
+        body.dark-theme \{\
+            --bg-color: #121212;\
+            --card-bg: #1e1e1e;\
+            --text-color: #e0e0e0;\
+            --placeholder-color: #777;\
+            --secondary-color: #333;\
+            --border-color: #2a2a2a;\
+            --completed-color: #666;\
+            --completed-bg: #282828;\
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);\
+        \}\
+\
+        /* App Container */\
+        .todo-container \{\
+            background-color: var(--card-bg);\
+            border-radius: 16px;\
+            box-shadow: var(--shadow);\
+            padding: 30px;\
+            width: 100%;\
+            max-width: 600px;\
+            box-sizing: border-box;\
+            transition: all 0.3s ease;\
+        \}\
+\
+        /* Header and Title */\
+        .header \{\
+            display: flex;\
+            justify-content: space-between;\
+            align-items: center;\
+            margin-bottom: 25px;\
+        \}\
+\
+        .header h1 \{\
+            font-size: 2.2rem;\
+            font-weight: 600;\
+            margin: 0;\
+            color: var(--primary-color);\
+        \}\
+\
+        #theme-toggle \{\
+            cursor: pointer;\
+            font-size: 1.5rem;\
+            border: none;\
+            background: none;\
+            color: var(--text-color);\
+            transition: transform 0.2s ease;\
+        \}\
+        \
+        #theme-toggle:hover \{\
+            transform: scale(1.1);\
+        \}\
+\
+        /* Task Input and Button */\
+        .task-input-container \{\
+            display: flex;\
+            gap: 10px;\
+            margin-bottom: 25px;\
+        \}\
+        \
+        #new-task-input \{\
+            flex-grow: 1;\
+            padding: 12px 16px;\
+            font-size: 1rem;\
+            border: 2px solid var(--border-color);\
+            border-radius: 8px;\
+            background-color: var(--bg-color);\
+            color: var(--text-color);\
+            transition: border-color 0.3s ease;\
+        \}\
+        \
+        #new-task-input:focus \{\
+            outline: none;\
+            border-color: var(--primary-color);\
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);\
+        \}\
+\
+        .add-btn \{\
+            background-color: var(--primary-color);\
+            color: white;\
+            border: none;\
+            padding: 12px 20px;\
+            border-radius: 8px;\
+            font-size: 1rem;\
+            font-weight: 600;\
+            cursor: pointer;\
+            transition: background-color 0.3s ease, transform 0.2s ease;\
+        \}\
+\
+        .add-btn:hover \{\
+            background-color: #3a75c1;\
+            transform: translateY(-2px);\
+        \}\
+\
+        /* Task List */\
+        #task-list \{\
+            list-style: none;\
+            padding: 0;\
+            margin: 0;\
+            min-height: 50px; /* Prevents layout shift */\
+        \}\
+\
+        .task-item \{\
+            display: flex;\
+            align-items: center;\
+            padding: 15px;\
+            margin-bottom: 10px;\
+            background-color: var(--bg-color);\
+            border-radius: 8px;\
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);\
+            transition: all 0.3s ease;\
+            position: relative;\
+            cursor: move;\
+            border: 1px solid transparent;\
+        \}\
+\
+        .task-item:last-child \{\
+            margin-bottom: 0;\
+        \}\
+\
+        /* Drag and Drop Styling */\
+        .task-item.dragging \{\
+            opacity: 0.5;\
+            box-shadow: var(--shadow);\
+            transform: translateY(-2px);\
+        \}\
+        \
+        .task-item.drag-over \{\
+            border: 1px dashed var(--primary-color);\
+        \}\
+\
+        /* Task Checkbox and Text */\
+        .task-checkbox \{\
+            appearance: none;\
+            width: 20px;\
+            height: 20px;\
+            border: 2px solid var(--secondary-color);\
+            border-radius: 4px;\
+            cursor: pointer;\
+            position: relative;\
+            margin-right: 15px;\
+            flex-shrink: 0;\
+            transition: border-color 0.2s ease;\
+        \}\
+        \
+        .task-checkbox:checked \{\
+            background-color: var(--primary-color);\
+            border-color: var(--primary-color);\
+        \}\
+        \
+        .task-checkbox:checked::before \{\
+            content: '\uc0\u10004 ';\
+            position: absolute;\
+            top: 50%;\
+            left: 50%;\
+            transform: translate(-50%, -50%);\
+            font-size: 14px;\
+            color: white;\
+        \}\
+\
+        .task-text \{\
+            flex-grow: 1;\
+            font-size: 1.1rem;\
+            word-wrap: break-word;\
+            word-break: break-all;\
+            cursor: text;\
+        \}\
+        \
+        .task-item.completed .task-text \{\
+            text-decoration: line-through;\
+            color: var(--completed-color);\
+            opacity: 0.7;\
+        \}\
+\
+        /* Task Actions and Details */\
+        .task-actions \{\
+            display: flex;\
+            align-items: center;\
+            gap: 10px;\
+            margin-left: auto;\
+        \}\
+\
+        .delete-btn, .edit-btn, .save-btn, .cancel-btn \{\
+            background: none;\
+            border: none;\
+            font-size: 1.2rem;\
+            cursor: pointer;\
+            opacity: 0.6;\
+            transition: opacity 0.2s ease;\
+        \}\
+\
+        .delete-btn \{ color: #e74c3c; \}\
+        .edit-btn \{ color: #f39c12; \}\
+        .save-btn \{ color: #2ecc71; \}\
+        .cancel-btn \{ color: #e74c3c; \}\
+\
+        .delete-btn:hover, .edit-btn:hover, .save-btn:hover, .cancel-btn:hover \{\
+            opacity: 1;\
+        \}\
+        \
+        .task-date-picker, .priority-select \{\
+            padding: 5px;\
+            border-radius: 4px;\
+            border: 1px solid var(--border-color);\
+            background-color: var(--bg-color);\
+            color: var(--text-color);\
+        \}\
+\
+        /* Priority Colors */\
+        .priority-indicator \{\
+            width: 10px;\
+            height: 10px;\
+            border-radius: 50%;\
+            margin-right: 10px;\
+            flex-shrink: 0;\
+        \}\
+        \
+        .high \{ background-color: var(--high-priority); \}\
+        .medium \{ background-color: var(--medium-priority); \}\
+        .low \{ background-color: var(--low-priority); \}\
+\
+        /* Empty State */\
+        #empty-state \{\
+            text-align: center;\
+            color: var(--placeholder-color);\
+            font-style: italic;\
+            padding: 20px;\
+            transition: opacity 0.3s ease;\
+        \}\
+\
+        /* Controls and Filters */\
+        .controls \{\
+            display: flex;\
+            justify-content: space-between;\
+            align-items: center;\
+            margin-top: 25px;\
+            padding-top: 15px;\
+            border-top: 1px solid var(--border-color);\
+            flex-wrap: wrap;\
+            gap: 15px;\
+        \}\
+\
+        .task-counter, #clear-completed \{\
+            font-size: 0.9rem;\
+            color: var(--placeholder-color);\
+        \}\
+\
+        #clear-completed \{\
+            cursor: pointer;\
+            text-decoration: underline;\
+            transition: color 0.2s ease;\
+        \}\
+\
+        #clear-completed:hover \{\
+            color: var(--text-color);\
+        \}\
+\
+        .filter-buttons \{\
+            display: flex;\
+            gap: 8px;\
+        \}\
+\
+        .filter-btn \{\
+            background-color: var(--secondary-color);\
+            color: var(--text-color);\
+            border: none;\
+            padding: 8px 15px;\
+            border-radius: 50px;\
+            font-size: 0.9rem;\
+            cursor: pointer;\
+            transition: all 0.3s ease;\
+        \}\
+        \
+        .filter-btn.active \{\
+            background-color: var(--primary-color);\
+            color: white;\
+            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);\
+        \}\
+        \
+        .filter-btn:hover:not(.active) \{\
+            background-color: #c0c8d1;\
+        \}\
+\
+        /* Search Input */\
+        .search-container \{\
+            margin-bottom: 25px;\
+            position: relative;\
+        \}\
+        \
+        #search-input \{\
+            width: 100%;\
+            padding: 12px 40px 12px 16px;\
+            font-size: 1rem;\
+            border: 2px solid var(--border-color);\
+            border-radius: 8px;\
+            background-color: var(--bg-color);\
+            color: var(--text-color);\
+            transition: border-color 0.3s ease;\
+        \}\
+        \
+        #search-input:focus \{\
+            outline: none;\
+            border-color: var(--primary-color);\
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);\
+        \}\
+        \
+        .search-icon \{\
+            position: absolute;\
+            right: 15px;\
+            top: 50%;\
+            transform: translateY(-50%);\
+            color: var(--placeholder-color);\
+        \}\
+\
+        /* Responsive Design */\
+        @media (max-width: 600px) \{\
+            body \{\
+                padding: 10px;\
+            \}\
+            .todo-container \{\
+                padding: 20px;\
+            \}\
+            .header h1 \{\
+                font-size: 1.8rem;\
+            \}\
+            .task-input-container \{\
+                flex-direction: column;\
+            \}\
+            .controls \{\
+                flex-direction: column;\
+                align-items: stretch;\
+            \}\
+            .filter-buttons \{\
+                justify-content: center;\
+            \}\
+        \}\
+    </style>\
+</head>\
+<body>\
+\
+    <div class="todo-container">\
+        <div class="header">\
+            <h1>To-Do List \uc0\u55357 \u56960 </h1>\
+            <button id="theme-toggle" aria-label="Toggle dark mode">\uc0\u55356 \u57113 </button>\
+        </div>\
+\
+        <div class="search-container">\
+            <input type="text" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">\
+            <span class="search-icon">\uc0\u55357 \u56589 </span>\
+        </div>\
+        \
+        <div class="task-input-container">\
+            <input type="text" id="new-task-input" placeholder="What needs to be done?" aria-label="Enter a new task">\
+            <button class="add-btn" id="add-task-btn" aria-label="Add new task">Add Task</button>\
+        </div>\
+\
+        <ul id="task-list" aria-live="polite">\
+            </ul>\
+        \
+        <p id="empty-state">\uc0\u55356 \u57225  You're all caught up! Add a new task to get started.</p>\
+\
+        <div class="controls">\
+            <span class="task-counter"></span>\
+            \
+            <div class="filter-buttons" role="group" aria-label="Filter tasks">\
+                <button class="filter-btn active" data-filter="all">All</button>\
+                <button class="filter-btn" data-filter="active">Active</button>\
+                <button class="filter-btn" data-filter="completed">Completed</button>\
+            </div>\
+            \
+            <button id="clear-completed">Clear Completed</button>\
+        </div>\
+    </div>\
+\
+    <script>\
+        document.addEventListener('DOMContentLoaded', () => \{\
+            const taskList = document.getElementById('task-list');\
+            const newTaskInput = document.getElementById('new-task-input');\
+            const addTaskBtn = document.getElementById('add-task-btn');\
+            const clearCompletedBtn = document.getElementById('clear-completed');\
+            const taskCounter = document.querySelector('.task-counter');\
+            const emptyState = document.getElementById('empty-state');\
+            const filterBtns = document.querySelectorAll('.filter-btn');\
+            const searchInput = document.getElementById('search-input');\
+            const themeToggle = document.getElementById('theme-toggle');\
+\
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];\
+            let currentFilter = 'all';\
+            let currentSearch = '';\
+\
+            // --- Core Functions ---\
+\
+            // Save tasks to localStorage\
+            const saveTasks = () => \{\
+                localStorage.setItem('tasks', JSON.stringify(tasks));\
+                renderTasks();\
+            \};\
+\
+            // Render tasks to the DOM\
+            const renderTasks = () => \{\
+                taskList.innerHTML = '';\
+                \
+                // Filter and search tasks\
+                const filteredTasks = tasks.filter(task => \{\
+                    const statusMatch = (currentFilter === 'all') || \
+                                        (currentFilter === 'active' && !task.completed) || \
+                                        (currentFilter === 'completed' && task.completed);\
+                    const searchMatch = task.text.toLowerCase().includes(currentSearch.toLowerCase());\
+                    return statusMatch && searchMatch;\
+                \});\
+\
+                if (filteredTasks.length === 0 && tasks.length > 0) \{\
+                    emptyState.style.display = 'block';\
+                    emptyState.textContent = 'No tasks match your filter or search criteria.';\
+                \} else if (tasks.length === 0) \{\
+                    emptyState.style.display = 'block';\
+                    emptyState.textContent = "\uc0\u55356 \u57225  You're all caught up! Add a new task to get started.";\
+                \} else \{\
+                    emptyState.style.display = 'none';\
+                \}\
+\
+                filteredTasks.forEach(task => \{\
+                    const taskItem = document.createElement('li');\
+                    taskItem.classList.add('task-item');\
+                    if (task.completed) \{\
+                        taskItem.classList.add('completed');\
+                    \}\
+                    taskItem.setAttribute('draggable', true);\
+                    taskItem.dataset.id = task.id;\
+\
+                    taskItem.innerHTML = `\
+                        <div class="priority-indicator $\{task.priority\}"></div>\
+                        <input type="checkbox" class="task-checkbox" $\{task.completed ? 'checked' : ''\} aria-label="Mark task as complete">\
+                        <span class="task-text" role="button" tabindex="0">$\{task.text\}</span>\
+                        <div class="task-actions">\
+                            <input type="date" class="task-date-picker" value="$\{task.dueDate || ''\}" aria-label="Set due date">\
+                            <select class="priority-select" aria-label="Set priority">\
+                                <option value="low" $\{task.priority === 'low' ? 'selected' : ''\}>Low</option>\
+                                <option value="medium" $\{task.priority === 'medium' ? 'selected' : ''\}>Medium</option>\
+                                <option value="high" $\{task.priority === 'high' ? 'selected' : ''\}>High</option>\
+                            </select>\
+                            <button class="delete-btn" aria-label="Delete task">\uc0\u10060 </button>\
+                        </div>\
+                    `;\
+                    taskList.appendChild(taskItem);\
+                \});\
+\
+                updateTaskCounter();\
+                addDragAndDropListeners();\
+            \};\
+\
+            // Add a new task\
+            const addTask = () => \{\
+                const taskText = newTaskInput.value.trim();\
+                if (taskText) \{\
+                    const newTask = \{\
+                        id: Date.now(),\
+                        text: taskText,\
+                        completed: false,\
+                        priority: 'low', // Default priority\
+                        dueDate: '',\
+                    \};\
+                    tasks.unshift(newTask); // Add to the top\
+                    newTaskInput.value = '';\
+                    saveTasks();\
+                \} else \{\
+                    alert('Please enter a task!');\
+                \}\
+            \};\
+\
+            // Update the task counter\
+            const updateTaskCounter = () => \{\
+                const totalTasks = tasks.length;\
+                const completedTasks = tasks.filter(task => task.completed).length;\
+                taskCounter.textContent = `$\{completedTasks\} of $\{totalTasks\} tasks completed`;\
+            \};\
+\
+            // Toggle task completion status\
+            const toggleCompletion = (id) => \{\
+                const taskIndex = tasks.findIndex(t => t.id === id);\
+                if (taskIndex !== -1) \{\
+                    tasks[taskIndex].completed = !tasks[taskIndex].completed;\
+                    saveTasks();\
+                \}\
+            \};\
+\
+            // Delete a task\
+            const deleteTask = (id) => \{\
+                tasks = tasks.filter(task => task.id !== id);\
+                saveTasks();\
+            \};\
+            \
+            // Edit a task\
+            const editTask = (id, newText) => \{\
+                const taskIndex = tasks.findIndex(t => t.id === id);\
+                if (taskIndex !== -1) \{\
+                    tasks[taskIndex].text = newText;\
+                    saveTasks();\
+                \}\
+            \};\
+\
+            // Update task priority\
+            const updatePriority = (id, newPriority) => \{\
+                const taskIndex = tasks.findIndex(t => t.id === id);\
+                if (taskIndex !== -1) \{\
+                    tasks[taskIndex].priority = newPriority;\
+                    saveTasks();\
+                \}\
+            \};\
+\
+            // Update due date\
+            const updateDueDate = (id, newDate) => \{\
+                const taskIndex = tasks.findIndex(t => t.id === id);\
+                if (taskIndex !== -1) \{\
+                    tasks[taskIndex].dueDate = newDate;\
+                    saveTasks();\
+                \}\
+            \};\
+\
+            // Clear all completed tasks\
+            const clearCompletedTasks = () => \{\
+                tasks = tasks.filter(task => !task.completed);\
+                saveTasks();\
+            \};\
+\
+            // Filter tasks\
+            const filterTasks = (filter) => \{\
+                currentFilter = filter;\
+                filterBtns.forEach(btn => btn.classList.remove('active'));\
+                document.querySelector(`[data-filter="$\{filter\}"]`).classList.add('active');\
+                renderTasks();\
+            \};\
+\
+            // Search tasks\
+            const searchTasks = () => \{\
+                currentSearch = searchInput.value;\
+                renderTasks();\
+            \};\
+\
+            // --- Event Listeners ---\
+\
+            // Add task on button click\
+            addTaskBtn.addEventListener('click', addTask);\
+            \
+            // Add task on Enter key press\
+            newTaskInput.addEventListener('keypress', (e) => \{\
+                if (e.key === 'Enter') \{\
+                    addTask();\
+                \}\
+            \});\
+\
+            // Handle task list events (delegation)\
+            taskList.addEventListener('click', (e) => \{\
+                const target = e.target;\
+                const taskItem = target.closest('.task-item');\
+                if (!taskItem) return;\
+                const taskId = parseInt(taskItem.dataset.id);\
+\
+                if (target.classList.contains('task-checkbox')) \{\
+                    toggleCompletion(taskId);\
+                \}\
+                \
+                if (target.classList.contains('delete-btn')) \{\
+                    deleteTask(taskId);\
+                \}\
+            \});\
+\
+            // Inline editing\
+            taskList.addEventListener('dblclick', (e) => \{\
+                const target = e.target;\
+                if (target.classList.contains('task-text')) \{\
+                    const taskItem = target.closest('.task-item');\
+                    const taskId = parseInt(taskItem.dataset.id);\
+                    const originalText = target.textContent;\
+\
+                    // Create an input field for editing\
+                    const editInput = document.createElement('input');\
+                    editInput.type = 'text';\
+                    editInput.value = originalText;\
+                    editInput.classList.add('task-edit-input');\
+                    \
+                    target.replaceWith(editInput);\
+                    editInput.focus();\
+\
+                    // Save on Enter, Cancel on Escape, Save on blur\
+                    const saveEdit = () => \{\
+                        const newText = editInput.value.trim();\
+                        if (newText && newText !== originalText) \{\
+                            editTask(taskId, newText);\
+                        \} else \{\
+                            // Revert to original text if empty or unchanged\
+                            renderTasks(); \
+                        \}\
+                    \};\
+\
+                    editInput.addEventListener('keypress', (e) => \{\
+                        if (e.key === 'Enter') \{\
+                            saveEdit();\
+                        \} else if (e.key === 'Escape') \{\
+                            renderTasks(); // Cancel edit\
+                        \}\
+                    \});\
+\
+                    editInput.addEventListener('blur', saveEdit);\
+                \}\
+            \});\
+\
+            // Priority and Due Date changes\
+            taskList.addEventListener('change', (e) => \{\
+                const target = e.target;\
+                const taskItem = target.closest('.task-item');\
+                if (!taskItem) return;\
+                const taskId = parseInt(taskItem.dataset.id);\
+\
+                if (target.classList.contains('priority-select')) \{\
+                    updatePriority(taskId, target.value);\
+                \}\
+\
+                if (target.classList.contains('task-date-picker')) \{\
+                    updateDueDate(taskId, target.value);\
+                \}\
+            \});\
+\
+            // Clear completed button\
+            clearCompletedBtn.addEventListener('click', clearCompletedTasks);\
+\
+            // Filter buttons\
+            filterBtns.forEach(btn => \{\
+                btn.addEventListener('click', () => \{\
+                    filterTasks(btn.dataset.filter);\
+                \});\
+            \});\
+\
+            // Search input\
+            searchInput.addEventListener('input', searchTasks);\
+\
+            // Theme toggle\
+            themeToggle.addEventListener('click', () => \{\
+                document.body.classList.toggle('dark-theme');\
+                const isDark = document.body.classList.contains('dark-theme');\
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');\
+                themeToggle.textContent = isDark ? '\uc0\u9728 \u65039 ' : '\u55356 \u57113 ';\
+            \});\
+            \
+            // Set initial theme\
+            const savedTheme = localStorage.getItem('theme') || 'light';\
+            if (savedTheme === 'dark') \{\
+                document.body.classList.add('dark-theme');\
+                themeToggle.textContent = '\uc0\u9728 \u65039 ';\
+            \} else \{\
+                themeToggle.textContent = '\uc0\u55356 \u57113 ';\
+            \}\
+\
+            // --- Drag and Drop functionality ---\
+            let dragSrcEl;\
+\
+            const handleDragStart = (e) => \{\
+                dragSrcEl = e.target;\
+                e.dataTransfer.effectAllowed = 'move';\
+                e.dataTransfer.setData('text/html', dragSrcEl.outerHTML);\
+                dragSrcEl.classList.add('dragging');\
+            \};\
+\
+            const handleDragOver = (e) => \{\
+                e.preventDefault();\
+                e.dataTransfer.dropEffect = 'move';\
+            \};\
+\
+            const handleDragEnter = (e) => \{\
+                e.target.closest('.task-item')?.classList.add('drag-over');\
+            \};\
+\
+            const handleDragLeave = (e) => \{\
+                e.target.closest('.task-item')?.classList.remove('drag-over');\
+            \};\
+\
+            const handleDrop = (e) => \{\
+                e.stopPropagation();\
+                e.target.closest('.task-item')?.classList.remove('drag-over');\
+\
+                if (dragSrcEl !== e.target.closest('.task-item')) \{\
+                    const sourceId = parseInt(dragSrcEl.dataset.id);\
+                    const targetId = parseInt(e.target.closest('.task-item').dataset.id);\
+                    const sourceIndex = tasks.findIndex(t => t.id === sourceId);\
+                    const targetIndex = tasks.findIndex(t => t.id === targetId);\
+\
+                    if (sourceIndex !== -1 && targetIndex !== -1) \{\
+                        const [draggedItem] = tasks.splice(sourceIndex, 1);\
+                        tasks.splice(targetIndex, 0, draggedItem);\
+                        saveTasks();\
+                    \}\
+                \}\
+            \};\
+\
+            const handleDragEnd = () => \{\
+                document.querySelectorAll('.task-item').forEach(item => \{\
+                    item.classList.remove('dragging');\
+                    item.classList.remove('drag-over');\
+                \});\
+            \};\
+            \
+            const addDragAndDropListeners = () => \{\
+                document.querySelectorAll('.task-item').forEach(item => \{\
+                    item.addEventListener('dragstart', handleDragStart);\
+                    item.addEventListener('dragenter', handleDragEnter);\
+                    item.addEventListener('dragover', handleDragOver);\
+                    item.addEventListener('dragleave', handleDragLeave);\
+                    item.addEventListener('drop', handleDrop);\
+                    item.addEventListener('dragend', handleDragEnd);\
+                \});\
+            \};\
+\
+            // Initial render\
+            renderTasks();\
+        \});\
+    </script>\
+</body>\
+</html>}
